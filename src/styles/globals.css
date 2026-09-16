@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@custom-variant light (&:where(.darkmode, .darkmode *));
+
+:root {
+  color-scheme: dark;
+  --background: #0b101b;
+  --surface: #111927;
+  --elevated: #172132;
+  --foreground: #f2f5fc;
+  --secondary: #a0aec4;
+  --muted: #8190a8;
+  --line: #253147;
+  --accent: #70a5ff;
+}
+
+/* Keep the original theme preference key/class for existing visitors. */
+.darkmode {
+  color-scheme: light;
+  --background: #f4f7fc;
+  --surface: #ffffff;
+  --elevated: #edf2fa;
+  --foreground: #17243b;
+  --secondary: #53647d;
+  --muted: #63738a;
+  --line: #dce4f0;
+  --accent: #2563eb;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-foreground: var(--foreground);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+}
+
+@layer base {
+  html { @apply scroll-smooth scroll-pt-24; }
+  body { @apply m-0 bg-background font-sans text-foreground antialiased; }
+  button, a, input, summary { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), summary { @apply cursor-pointer; }
+  button:disabled { @apply cursor-not-allowed; }
+  :focus-visible { @apply outline-2 outline-offset-4 outline-blue-400; }
+  ::selection { @apply bg-blue-500/30 text-foreground; }
+  * { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
