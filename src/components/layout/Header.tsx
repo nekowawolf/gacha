@@ -17,9 +17,8 @@ export default function Header() {
       <header className="sticky top-0 z-30 border-b border-line/70 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
           <a href="#" aria-label="Gacha home" className="flex shrink-0 items-center gap-3">
-            <Image src="/img/logo_gacha.webp" alt="" width={38} height={38} priority className="rounded-xl" />
-            <span className="text-[22px] font-extrabold tracking-[-1px]">gacha<span className="text-blue-500">.</span></span>
-            <span className="ml-1 hidden rounded-md border border-line bg-elevated/60 px-2 py-1 text-[9px] font-semibold tracking-[0.16em] text-muted sm:block">CREATIVE STUDIO</span>
+            <Image src="/img/logo_gacha.webp" alt="" width={38} height={38} priority className="shrink-0 rounded-[9px] object-contain" />
+            <span className="text-[22px] font-extrabold tracking-[-1px]">gacha<span className="text-blue-600">.</span></span>
           </a>
           <nav aria-label="Main navigation" className="hidden items-center gap-8 text-[13px] font-medium md:flex">
             <a href="#studio" className="flex items-center gap-2 text-foreground transition hover:text-accent"><span className="size-1.5 rounded-full bg-blue-500" />Studio</a>
@@ -33,11 +32,11 @@ export default function Header() {
           </div>
         </div>
       </header>
-      {help && <Modal title="A little chance. Endless possibilities." onClose={() => setHelp(false)}>
+      {help && <Modal title="How it works" onClose={() => setHelp(false)}>
         <div className="space-y-6">
-          {[["01", "Set your possibilities", "Start with a preset or create your own categories. Add options, then enable the categories you want to draw from."], ["02", "Let chance do its thing", "Click Start gacha. One option is drawn from each active category, with an equal chance for every option."], ["03", "Reveal, save, create", "Reveal cards one at a time or in sequence. Save your favorite combination or copy it for your next brief."]].map(([number, title, description]) => <div key={number} className="flex gap-4"><span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-xs font-bold text-accent">{number}</span><div><h3 className="mb-1 text-sm font-semibold">{title}</h3><p className="text-sm leading-relaxed text-secondary">{description}</p></div></div>)}
-          <p className="rounded-xl border border-line bg-elevated/50 p-4 text-xs leading-relaxed text-muted">Rarity is purely visual and never affects the odds. Data stays in this browser, with no account or server. Use the speaker icon to mute sound.</p>
-          <button onClick={() => setHelp(false)} className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Let’s gacha!</button>
+          {[["01", "Configure categories", "Create categories and add options, or choose a preset. Enable the categories to include in the draw."], ["02", "Run a draw", "Select Start gacha to draw one option from each active category. Options within each category have equal odds."], ["03", "Review results", "Reveal cards individually or in sequence. Copy the combination or save it to your collection."]].map(([number, title, description]) => <div key={number} className="flex gap-4"><span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-xs font-bold text-accent">{number}</span><div><h3 className="mb-1 text-sm font-semibold">{title}</h3><p className="text-sm leading-relaxed text-secondary">{description}</p></div></div>)}
+          <p className="rounded-xl border border-line bg-elevated/50 p-4 text-xs leading-relaxed text-muted">Rarity is visual only and does not affect selection odds. Categories and saved results are stored in this browser. Use the header controls to change the theme or mute sound.</p>
+          <button onClick={() => setHelp(false)} className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Close</button>
         </div>
       </Modal>}
     </>

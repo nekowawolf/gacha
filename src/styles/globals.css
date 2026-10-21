@@ -7,11 +7,11 @@
   --background: #0b101b;
   --surface: #111927;
   --elevated: #172132;
-  --foreground: #f2f5fc;
-  --secondary: #a0aec4;
-  --muted: #8190a8;
+  --foreground: #f9fafb;
+  --secondary: #d1d5db;
+  --muted: #9ca3af;
   --line: #253147;
-  --accent: #70a5ff;
+  --accent: #a5b4fc;
 }
 
 /* Keep the original theme preference key/class for existing visitors. */
@@ -20,11 +20,11 @@
   --background: #f4f7fc;
   --surface: #ffffff;
   --elevated: #edf2fa;
-  --foreground: #17243b;
-  --secondary: #53647d;
+  --foreground: #111827;
+  --secondary: #6b7280;
   --muted: #63738a;
   --line: #dce4f0;
-  --accent: #2563eb;
+  --accent: #4f46e5;
 }
 
 @theme inline {
@@ -48,6 +48,15 @@
   :focus-visible { @apply outline-2 outline-offset-4 outline-blue-400; }
   ::selection { @apply bg-blue-500/30 text-foreground; }
   * { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+}
+
+/* Apply the theme in one paint, including controls and pseudo-elements. */
+.theme-changing,
+.theme-changing *,
+.theme-changing *::before,
+.theme-changing *::after,
+.theme-changing *::backdrop {
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

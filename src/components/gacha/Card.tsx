@@ -9,7 +9,7 @@ const rarityStyles: Record<Rarity, { border: string; text: string; glow: string;
   normal: { border: "border-slate-400/50", text: "text-slate-300 light:text-slate-600", glow: "bg-slate-400", gradient: "from-slate-600/30 light:from-slate-400/15" },
   common: { border: "border-slate-400/50", text: "text-slate-300 light:text-slate-600", glow: "bg-slate-400", gradient: "from-slate-600/30 light:from-slate-400/15" },
   uncommon: { border: "border-emerald-400/60", text: "text-emerald-300 light:text-emerald-700", glow: "bg-emerald-400", gradient: "from-emerald-600/25 light:from-emerald-400/15" },
-  rare: { border: "border-blue-400/70", text: "text-blue-300 light:text-blue-700", glow: "bg-blue-400", gradient: "from-blue-600/30 light:from-blue-400/15" },
+  rare: { border: "border-cyan-300/80 light:border-cyan-600/60", text: "text-cyan-200 light:text-cyan-800", glow: "bg-cyan-300", gradient: "from-cyan-500/35 via-teal-500/10 light:from-cyan-300/30 light:via-teal-200/15" },
   epic: { border: "border-violet-400/70", text: "text-violet-300 light:text-violet-700", glow: "bg-violet-400", gradient: "from-violet-600/30 light:from-violet-400/15" },
   legendary: { border: "border-amber-300/80", text: "text-amber-200 light:text-amber-800", glow: "bg-amber-300", gradient: "from-amber-500/30 light:from-amber-300/20" },
   mythic: { border: "border-rose-400/80", text: "text-rose-300 light:text-rose-700", glow: "bg-rose-400", gradient: "from-rose-600/30 light:from-rose-400/15" },
@@ -21,7 +21,7 @@ export function CardBack({ index = 0 }: { index?: number }) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#2563eb18,transparent_70%)]" />
       <div className="absolute inset-x-0 inset-y-5"><Image src="/img/gacha_line.webp" alt="" fill sizes="240px" className="object-cover opacity-90" priority /></div>
       <div className="absolute inset-x-3 top-3 flex items-center justify-between text-[7px] font-semibold tracking-[0.2em] text-blue-200/60 light:text-blue-800/75"><span>GACHA STUDIO</span><span>{String(index + 1).padStart(2, "0")}</span></div>
-      <div className="absolute inset-x-0 bottom-3 text-center text-[7px] tracking-[0.2em] text-blue-200/50 light:text-blue-800/65">A LITTLE CHANCE. A NEW IDEA.</div>
+      <div className="absolute inset-x-0 bottom-3 text-center text-[7px] tracking-[0.2em] text-blue-200/50 light:text-blue-800/65">RANDOM SELECTION</div>
       <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-transparent" />
     </div>
   );

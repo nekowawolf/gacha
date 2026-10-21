@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Gacha — Let chance spark something.',
+  title: 'Gacha — Random Selection Tool',
   description:
-    'Your personal gacha studio for ideas, designs, projects, and everyday decisions. Set your options, reveal the cards, and discover new possibilities.',
+    'Create custom categories, add options, and generate random combinations. Save results in your browser or export your collection.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',

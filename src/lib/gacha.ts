@@ -8,7 +8,7 @@ export type Preset = { id: PresetId; name: string; description: string; categori
 
 export const presets: Preset[] = [
   {
-    id: "website", name: "Website", description: "A fresh brief for your next web project.",
+    id: "website", name: "Website", description: "Website type, design style, color palette, and deadline.",
     categories: [
       { name: "Website type", options: ["Creative portfolio", "Landing page", "Dashboard", "Online store", "Community website", "Personal blog"] },
       { name: "Design style", options: ["Minimalist", "Neo-brutalism", "Glassmorphism", "Retro futurism", "Editorial", "Bento grid"] },
@@ -17,7 +17,7 @@ export const presets: Preset[] = [
     ],
   },
   {
-    id: "game", name: "Game", description: "Create your own game development challenge.",
+    id: "game", name: "Game", description: "Game genre, world theme, visual style, and deadline.",
     categories: [
       { name: "Genre", options: ["Platformer", "Roguelike", "Puzzle", "Survival", "Simulation", "Rhythm game"] },
       { name: "World theme", options: ["Cyberpunk", "Enchanted forest", "Outer space", "Underwater", "Post-apocalyptic", "Small town"] },
@@ -26,7 +26,7 @@ export const presets: Preset[] = [
     ],
   },
   {
-    id: "content", name: "Content", description: "Keep your next content idea within reach.",
+    id: "content", name: "Content", description: "Content topic, format, platform, and duration.",
     categories: [
       { name: "Topic", options: ["Coding", "UI design", "Productivity", "Behind the scenes", "Creative experiment"] },
       { name: "Format", options: ["Quick tutorial", "Challenge", "Timelapse", "Personal story", "Before & after"] },
@@ -35,7 +35,7 @@ export const presets: Preset[] = [
     ],
   },
   {
-    id: "daily", name: "Everyday", description: "Small decisions, without the overthinking.",
+    id: "daily", name: "Everyday", description: "Activity, place, and start time.",
     categories: [
       { name: "Activity", options: ["Read a book", "Take a walk", "Learn something new", "Try a new recipe", "Build a side project"] },
       { name: "Place", options: ["At home", "Favorite café", "Library", "City park"] },
@@ -51,7 +51,7 @@ export function createCategories(preset: Preset): GachaCategory[] {
   }));
 }
 
-export const defaultCategories = createCategories(presets[0]);
+export const defaultCategories: GachaCategory[] = [];
 export function activeCategories(categories: GachaCategory[]) {
   return categories.filter((category) => category.enabled !== false && category.name.trim() && category.items.some((item) => item.value.trim()));
 }
