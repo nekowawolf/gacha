@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MotionConfig, motion } from "framer-motion";
 import { FiArrowDownRight, FiArrowRight, FiBox, FiCheck, FiCode, FiCoffee, FiFilm, FiGrid, FiLayers, FiMonitor, FiShuffle, FiSliders, FiZap } from "react-icons/fi";
 import { TbDeviceGamepad2, TbSparkles } from "react-icons/tb";
@@ -21,10 +21,35 @@ export default function HomePage() {
   const { play } = useSound();
   const [pendingPreset, setPendingPreset] = useState<PresetId | null>(null);
   const [mobileTab, setMobileTab] = useState<"stage" | "options">("stage");
+  const presetScrollRef = useRef<HTMLDivElement>(null);
+  const presetFadeRef = useRef<HTMLDivElement>(null);
   const active = activeCategories(categories);
   const combinations = combinationCount(categories);
   const optionCount = active.reduce((total, category) => total + category.items.filter((item) => item.value.trim()).length, 0);
   const selectedPreset = presets.find((preset) => categories.length === preset.categories.length && categories.every((category, index) => category.id === `${preset.id}-${index}`));
+
+  useEffect(() => {
+    const scroller = presetScrollRef.current;
+    const fade = presetFadeRef.current;
+    if (!scroller || !fade) return;
+
+    const checkOverflow = () => {
+      const hasMore = Math.ceil(scroller.scrollLeft + scroller.clientWidth) < scroller.scrollWidth - 1;
+      fade.style.opacity = hasMore ? "1" : "0";
+      fade.style.visibility = hasMore ? "visible" : "hidden";
+    };
+
+    const observer = new ResizeObserver(checkOverflow);
+    observer.observe(scroller);
+    Array.from(scroller.children).forEach((child) => observer.observe(child));
+    scroller.addEventListener("scroll", checkOverflow, { passive: true });
+    checkOverflow();
+
+    return () => {
+      observer.disconnect();
+      scroller.removeEventListener("scroll", checkOverflow);
+    };
+  }, []);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -34,8 +59,8 @@ export default function HomePage() {
           <section className="relative flex flex-col justify-between gap-9 py-10 sm:py-14 lg:flex-row lg:items-center lg:gap-12 lg:py-16">
             <div className="pointer-events-none absolute -top-24 right-0 -z-10 size-[420px] rounded-full bg-blue-500/4 blur-[100px]" />
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-2xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/7 px-3 py-1.5 text-[9px] font-semibold tracking-[0.17em] text-accent"><TbSparkles size={13} /> RANDOM SELECTION TOOL</div>
-              <h1 className="text-[38px] leading-[1.15] font-semibold tracking-[-1.8px] sm:text-[52px] sm:tracking-[-2.5px] xl:text-[58px]">Random selection<br /><span className="text-blue-600">with custom options.</span><span className="ml-2 inline-block align-top text-2xl text-blue-600 sm:ml-3 sm:text-4xl">✦</span></h1>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-[9px] font-semibold tracking-[0.17em] text-blue-400"><TbSparkles size={13} /> RANDOM SELECTION TOOL</div>
+              <h1 className="text-[38px] leading-[1.15] font-semibold tracking-[-1.8px] sm:text-[52px] sm:tracking-[-2.5px] xl:text-[58px]">Random selection<br /><span className="text-blue-600">with custom options</span><span className="ml-2 inline-block align-top text-2xl text-blue-600 sm:ml-3 sm:text-4xl">✦</span></h1>
               <p className="mt-5 max-w-lg text-[13px] leading-7 text-secondary">Create categories, add options, and generate random combinations.<br className="hidden sm:block" /> Save results locally or export your collection.</p>
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] text-muted"><span className="flex items-center gap-1.5"><FiCode size={12} />Custom categories</span><span className="flex items-center gap-1.5"><FiSliders size={12} />Editable options</span><span className="flex items-center gap-1.5"><FiZap size={12} />Random draws</span></div>
             </motion.div>
@@ -54,8 +79,13 @@ export default function HomePage() {
 
           <section id="studio" aria-label="Gacha studio">
             <div className="mb-5 flex flex-col justify-between gap-4 border-t border-line pt-6 sm:flex-row sm:items-center">
-              <div className="flex flex-wrap items-center gap-2"><span className="mr-2 text-[11px] text-muted">Start with a preset</span>{presets.map((preset) => { const Icon = presetIcons[preset.id]; const selected = selectedPreset?.id === preset.id; return <button key={preset.id} title={preset.description} onClick={() => { if (categories.length) setPendingPreset(preset.id); else { applyPreset(preset.id); play("click"); } }} className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-medium transition ${selected ? "border-blue-500/30 bg-blue-500/10 text-accent" : "border-line bg-surface/70 text-secondary hover:border-blue-400/40 hover:text-accent"}`}><Icon size={14} />{preset.name}</button>; })}</div>
-              <span className="flex items-center gap-1.5 text-[10px] text-muted"><FiCheck size={12} className="text-emerald-400" />No account required</span>
+              <div className="relative min-w-0 sm:flex-1">
+                <div ref={presetScrollRef} className="-my-1 flex items-center gap-2 overflow-x-auto py-1 whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-x-visible">
+                  <span className="mr-2 shrink-0 text-[11px] text-muted">Start with a preset</span>{presets.map((preset) => { const Icon = presetIcons[preset.id]; const selected = selectedPreset?.id === preset.id; return <button key={preset.id} title={preset.description} onClick={() => { if (categories.length) setPendingPreset(preset.id); else { applyPreset(preset.id); play("click"); } }} className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-[11px] font-medium transition ${selected ? "border-blue-500/30 bg-blue-500/10 text-accent" : "border-line bg-surface/70 text-secondary hover:border-blue-400/40 hover:text-accent"}`}><Icon size={14} />{preset.name}</button>; })}
+                </div>
+                <div ref={presetFadeRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-blue-600/20 to-transparent transition-opacity duration-200 motion-reduce:transition-none" style={{ opacity: 0, visibility: "hidden" }} />
+              </div>
+              <span className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted"><FiCheck size={12} className="text-emerald-400" />No account required</span>
             </div>
 
             <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-line bg-surface p-1 lg:hidden" role="tablist" aria-label="Studio view" onKeyDown={(event) => {

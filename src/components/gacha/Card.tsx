@@ -20,7 +20,7 @@ export function CardBack({ index = 0 }: { index?: number }) {
     <div className="absolute inset-0 overflow-hidden rounded-[inherit] border border-blue-400/35 bg-linear-to-br from-[#182e51] via-[#101c32] to-[#101828] shadow-[inset_0_0_30px_#3b82f612] light:from-blue-50 light:via-white light:to-blue-100">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#2563eb18,transparent_70%)]" />
       <div className="absolute inset-x-0 inset-y-5"><Image src="/img/gacha_line.webp" alt="" fill sizes="240px" className="object-cover opacity-90" priority /></div>
-      <div className="absolute inset-x-3 top-3 flex items-center justify-between text-[7px] font-semibold tracking-[0.2em] text-blue-200/60 light:text-blue-800/75"><span>GACHA STUDIO</span><span>{String(index + 1).padStart(2, "0")}</span></div>
+      <div className="absolute inset-x-3 top-3 flex items-center justify-between text-[7px] font-semibold tracking-[0.2em] text-blue-200/60 light:text-blue-800/75"><span>GACHA</span><span>{String(index + 1).padStart(2, "0")}</span></div>
       <div className="absolute inset-x-0 bottom-3 text-center text-[7px] tracking-[0.2em] text-blue-200/50 light:text-blue-800/65">RANDOM SELECTION</div>
       <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-transparent" />
     </div>

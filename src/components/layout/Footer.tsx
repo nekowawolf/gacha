@@ -2,7 +2,7 @@ export default function Footer() {
   return (
     <footer className="mt-14 border-t border-line/70">
       <div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-5 px-5 py-7 text-xs text-muted sm:px-8 lg:flex-row lg:px-12">
-        <p className="text-center lg:text-left"><span className="mr-3 text-base font-extrabold tracking-tight text-secondary">gacha.</span> Random selection with custom categories.</p>
+        <p className="text-center lg:text-left"><span className="mr-3 text-base font-extrabold tracking-tight text-secondary">Gacha</span> Random selection with custom categories.</p>
         <div className="flex flex-wrap items-center justify-center gap-2 text-secondary lg:justify-end">
           <span>&copy; {new Date().getFullYear()} Gacha</span>
           <span className="text-muted">·</span>
