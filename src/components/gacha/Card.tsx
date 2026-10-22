@@ -27,7 +27,7 @@ export function CardBack({ index = 0 }: { index?: number }) {
   );
 }
 
-export default function Card({ result, index, revealed, charging, disabled, onReveal }: { result: GachaResultItem; index: number; revealed: boolean; charging: boolean; disabled: boolean; onReveal: () => void }) {
+export default function Card({ result, index, revealed, charging, disabled, onReveal, onDealComplete }: { result: GachaResultItem; index: number; revealed: boolean; charging: boolean; disabled: boolean; onReveal: () => void; onDealComplete?: () => void }) {
   const reduced = useReducedMotion();
   const rarity = result.rarity ?? "rare";
   const style = rarityStyles[rarity];
@@ -35,7 +35,13 @@ export default function Card({ result, index, revealed, charging, disabled, onRe
   const title = palette.length ? result.itemValue.split(" · ")[0] : result.itemValue;
 
   return (
-    <motion.div initial={reduced ? false : { opacity: 0, y: 24, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: reduced ? 0 : index * 0.09, duration: 0.4 }} className="relative min-w-0">
+    <motion.div
+      initial={reduced || revealed ? { opacity: 0 } : { opacity: 0, y: -90, x: index % 2 === 0 ? 28 : -28, rotate: index % 2 === 0 ? -9 : 9, scale: 0.78 }}
+      animate={{ opacity: 1, y: 0, x: 0, rotate: 0, scale: 1 }}
+      transition={{ delay: reduced || revealed ? 0 : Math.min(index, 7) * 0.1, duration: reduced || revealed ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+      onAnimationComplete={onDealComplete}
+      className="relative min-w-0"
+    >
       {revealed && !reduced && <>
         <motion.div initial={{ opacity: 0.7, scale: 0.7 }} animate={{ opacity: 0, scale: 1.8 }} transition={{ duration: 0.8 }} className={`pointer-events-none absolute inset-3 rounded-full blur-2xl ${style.glow}`} />
         {Array.from({ length: 12 }, (_, i) => <motion.span key={i} initial={{ x: 0, y: 0, opacity: 1, scale: 1 }} animate={{ x: Math.cos(i * Math.PI / 6) * 110, y: Math.sin(i * Math.PI / 6) * 145, opacity: 0, scale: 0 }} transition={{ duration: 0.85, delay: 0.12 }} className={`pointer-events-none absolute left-1/2 top-1/2 z-10 size-1 rounded-full ${style.glow}`} />)}

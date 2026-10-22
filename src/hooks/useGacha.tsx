@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useSyncExternalStore } from "react";
 import { createStorage } from "@/lib/storage";
+import { parseCategoryImport } from "@/lib/categoryImport";
 import { createCategories, defaultCategories, isCategories, isSavedResults, presets, type GachaCategory, type GachaResultItem, type PresetId, type SavedResult } from "@/lib/gacha";
 
 export type { GachaCategory, GachaItem, GachaResultItem, SavedResult } from "@/lib/gacha";
@@ -21,6 +22,7 @@ interface GachaContextType {
   removeItem: (categoryId: string, itemId: string) => void;
   updateItem: (categoryId: string, itemId: string, value: string) => void;
   applyPreset: (id: PresetId) => void;
+  importCategories: (text: string) => void;
   saveResult: (items: GachaResultItem[], title?: string) => void;
   removeResult: (id: string) => void;
 }
@@ -46,6 +48,13 @@ export function GachaProvider({ children }: { children: React.ReactNode }) {
       removeItem: (id, itemId) => editCategory(id, (category) => ({ ...category, items: category.items.filter((item) => item.id !== itemId) })),
       updateItem: (id, itemId, value) => editCategory(id, (category) => ({ ...category, items: category.items.map((item) => item.id === itemId ? { ...item, value } : item) })),
       applyPreset: (id) => { const preset = presets.find((preset) => preset.id === id); if (preset) setCategories(createCategories(preset)); },
+      importCategories: (text) => {
+        const imported = parseCategoryImport(text).map((category) => ({
+          id: crypto.randomUUID(), name: category.name, enabled: true,
+          items: category.options.map((value) => ({ id: crypto.randomUUID(), value })),
+        }));
+        setCategories((previous) => [...previous, ...imported]);
+      },
       saveResult: (items, title) => { if (items.length) resultStore.setValue((previous) => [{ id: crypto.randomUUID(), items: items.map((item) => ({ ...item })), timestamp: Date.now(), title }, ...previous]); },
       removeResult: (id) => resultStore.setValue((previous) => previous.filter((result) => result.id !== id)),
     }}>

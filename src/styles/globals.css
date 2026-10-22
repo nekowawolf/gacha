@@ -11,7 +11,7 @@
   --secondary: #d1d5db;
   --muted: #9ca3af;
   --line: #253147;
-  --accent: #a5b4fc;
+  --accent: var(--color-blue-400);
 }
 
 /* Keep the original theme preference key/class for existing visitors. */
@@ -24,7 +24,7 @@
   --secondary: #6b7280;
   --muted: #63738a;
   --line: #dce4f0;
-  --accent: #4f46e5;
+  --accent: var(--color-blue-600);
 }
 
 @theme inline {

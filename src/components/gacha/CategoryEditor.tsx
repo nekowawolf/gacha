@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { FiCheck, FiChevronDown, FiGrid, FiPlus, FiSliders, FiTrash2, FiX } from "react-icons/fi";
+import { FiCheck, FiChevronDown, FiGrid, FiPlus, FiSliders, FiTrash2, FiUpload, FiX } from "react-icons/fi";
 import { useGacha, type GachaCategory } from "@/hooks/useGacha";
 import { activeCategories } from "@/lib/gacha";
 import Modal from "@/components/ui/Modal";
+import Toast from "@/components/ui/Toast";
+import CategoryImport from "@/components/gacha/CategoryImport";
 
 function CategoryRow({ category, index }: { category: GachaCategory; index: number }) {
   const { updateCategory, toggleCategory, removeCategory, addItem, removeItem, updateItem } = useGacha();
@@ -51,6 +53,8 @@ function CategoryRow({ category, index }: { category: GachaCategory; index: numb
 export default function CategoryEditor() {
   const { categories, addCategory, persistent } = useGacha();
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
   const [name, setName] = useState("");
 
   return (
@@ -61,13 +65,16 @@ export default function CategoryEditor() {
       </div>
       <div role="region" aria-label="Category list" tabIndex={0} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-4 focus-visible:-outline-offset-2">
         {categories.map((category, index) => <CategoryRow key={category.id} category={category} index={index} />)}
-        {!categories.length && <div className="py-8 text-center"><FiGrid className="mx-auto mb-3 text-2xl text-muted" /><p className="text-sm text-secondary">No categories added</p><p className="mt-1 text-xs text-muted">Add a category or choose a preset.</p></div>}
+        {!categories.length && <div className="py-8 text-center"><FiGrid className="mx-auto mb-3 text-2xl text-muted" /><p className="text-sm text-secondary">No categories added</p><p className="mt-1 text-xs text-muted">Add a category, import JSON, or choose a preset.</p></div>}
       </div>
       <div className="shrink-0 space-y-3 border-t border-line bg-surface p-4">
+        <button onClick={() => setImporting(true)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-elevated py-3 text-xs font-medium text-secondary transition hover:border-blue-500/40 hover:text-accent"><FiUpload size={15} />Import JSON</button>
         <button onClick={() => setAdding(true)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-blue-500/35 bg-blue-500/5 py-3.5 text-xs font-medium text-accent transition hover:border-blue-500/60 hover:bg-blue-500/10"><FiPlus size={15} />Add category</button>
         <div className="flex items-start gap-2 px-1 text-[10px] leading-relaxed text-muted"><span className={`mt-1 size-1.5 shrink-0 rounded-full ${persistent ? "bg-emerald-400" : "bg-amber-400"}`} /><p>{persistent ? "Automatically saved in this browser." : "Browser storage is unavailable. Copy your results before closing this page."}</p></div>
       </div>
       {adding && <Modal title="New category" onClose={() => setAdding(false)}><form onSubmit={(event) => { event.preventDefault(); if (name.trim()) { addCategory(name); setName(""); setAdding(false); } }}><label htmlFor="category-name" className="text-sm text-secondary">Category name</label><input id="category-name" autoFocus maxLength={60} required value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. Framework, Activity, Location" className="mt-2 w-full rounded-xl border border-line bg-background px-4 py-3 text-sm focus:border-blue-500 focus:outline-none" /><p className="mt-3 text-xs leading-relaxed text-muted">Create the category, then add options to include in the draw.</p><button disabled={!name.trim()} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-40"><FiPlus />Create category</button></form></Modal>}
+      {importing && <CategoryImport onClose={() => setImporting(false)} onImported={(count) => { setImporting(false); setImportMessage(`${count} ${count === 1 ? "category" : "categories"} imported successfully.`); }} />}
+      {importMessage && <Toast type="success" message={importMessage} onClose={() => setImportMessage("")} />}
     </aside>
   );
 }

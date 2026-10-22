@@ -6,10 +6,11 @@ import { FiArrowRight, FiBookmark, FiCheck, FiCopy, FiLayers, FiRotateCw, FiShuf
 import { useGacha } from "@/hooks/useGacha";
 import { useSound } from "@/hooks/useSound";
 import { activeCategories, drawResults, formatResults, type GachaResultItem } from "@/lib/gacha";
-import Card, { CardBack } from "./Card";
+import Card from "./Card";
+import DrawDeck, { SHUFFLE_DURATION } from "./DrawDeck";
 import Toast, { type ToastType } from "@/components/ui/Toast";
 
-type Phase = "idle" | "shuffling" | "ready" | "complete";
+type Phase = "idle" | "shuffling" | "dealing" | "ready" | "complete";
 
 export default function GachaArea() {
   const { categories, saveResult } = useGacha();
@@ -51,8 +52,16 @@ export default function GachaArea() {
     setBusy(true);
     setResults(drawResults(categories));
     setPhase("shuffling");
-    play("shuffle");
-    schedule(() => { setPhase("ready"); setBusy(false); lock.current = false; }, reduced ? 100 : 1100);
+    if (!reduced) {
+      play("shuffle");
+      schedule(() => play("charge"), 1450);
+    }
+    schedule(() => { stop(); setPhase("dealing"); }, reduced ? 100 : SHUFFLE_DURATION);
+  };
+
+  const finishDealing = () => {
+    if (phase !== "dealing") return;
+    setPhase("ready"); setBusy(false); lock.current = false;
   };
 
   const revealOne = (index: number, next?: () => void) => {
@@ -115,34 +124,26 @@ export default function GachaArea() {
       <div className="relative flex min-h-[540px] flex-1 flex-col items-center justify-center px-5 py-8 sm:min-h-[580px] sm:px-8">
         <AnimatePresence mode="wait">
           {(phase === "idle" || phase === "shuffling") ? (
-            <motion.div key="intro" exit={{ opacity: 0, scale: reduced ? 1 : 0.94 }} transition={{ duration: 0.2 }} className="flex w-full flex-col items-center">
+            <motion.div key="intro" exit={{ opacity: 0, scale: reduced ? 1 : 1.04 }} transition={{ duration: reduced ? 0 : 0.16 }} className="flex w-full flex-col items-center">
               <div className="mb-2 flex items-center gap-2 text-center text-[8px] leading-5 font-medium tracking-[0.16em] text-accent sm:text-[9px] sm:tracking-[0.22em]"><span className="h-px w-4 shrink-0 bg-blue-400/30 sm:w-6" /> ONE OPTION PER CATEGORY <span className="h-px w-4 shrink-0 bg-blue-400/30 sm:w-6" /></div>
-              <div className="relative my-4 h-[260px] w-full max-w-[430px] sm:h-[285px]" aria-hidden="true">
-                <div className="absolute left-1/2 top-1/2 h-44 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/15 blur-[55px]" />
-                {[-1, 1, 0].map((direction, index) => <motion.div key={direction}
-                  initial={{ x: direction * 65, rotate: direction * 15, y: direction === 0 ? 4 : 22, scale: 1 }}
-                  animate={phase === "shuffling" && !reduced ? { x: [direction * 65, -direction * 40, direction * 30, 0], rotate: [direction * 15, -direction * 12, direction * 6, 0], y: [direction === 0 ? 4 : 22, -12, 8, -8], scale: [1, 0.96, 1.04, 1] } : { x: direction * 65, rotate: direction * 15, y: direction === 0 ? 4 : 22, scale: 1 }}
-                  transition={{ duration: reduced ? 0 : 0.95, ease: "easeInOut" }}
-                  className={`absolute left-1/2 top-4 h-[228px] w-[155px] -translate-x-1/2 rounded-xl shadow-[0_18px_50px_#0008] light:shadow-[0_18px_40px_#1e40af20] sm:h-[250px] sm:w-[170px] ${direction === 0 ? "z-10" : "opacity-75"}`}
-                ><CardBack index={index} /></motion.div>)}
-                <span className="absolute left-[12%] top-8 text-lg text-blue-400/40">✦</span><span className="absolute right-[12%] bottom-8 text-2xl text-blue-300/60">✦</span><span className="absolute right-[17%] top-0 text-xs text-blue-300/30">+</span>
-              </div>
-              <h3 className="text-center text-2xl font-semibold tracking-tight sm:text-[27px]">{phase === "shuffling" ? "Preparing results..." : "Generate a combination"}</h3>
-              <p className="mt-2 max-w-sm text-center text-xs leading-6 text-secondary">{phase === "shuffling" ? "Preparing cards for the selected options." : "Draw one random option from each active category."}</p>
+              <DrawDeck shuffling={phase === "shuffling"} />
+              <h3 role={phase === "shuffling" ? "status" : undefined} className="text-center text-2xl font-semibold tracking-tight sm:text-[27px]">{phase === "shuffling" ? "Shuffling your next combination" : "Generate a combination"}</h3>
+              <p className="mt-2 max-w-sm text-center text-xs leading-6 text-secondary">{phase === "shuffling" ? "Mixing the deck. Your next combination is on its way." : "Draw one random option from each active category."}</p>
               <motion.button tabIndex={0} whileHover={!reduced && !busy ? { scale: 1.025 } : undefined} whileTap={!reduced ? { scale: 0.97 } : undefined} onClick={pull} disabled={busy} className="group mt-6 flex min-w-[215px] items-center justify-center gap-3 rounded-xl border border-blue-400/40 bg-linear-to-b from-blue-500 to-blue-600 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_4px_24px_#2563eb40,inset_0_1px_0_#ffffff30] transition hover:from-blue-400 hover:to-blue-500 disabled:opacity-45">
                 <FiShuffle size={17} className={busy ? "motion-safe:animate-pulse" : ""} />{busy ? "Shuffling..." : "Start Gacha"}<FiArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </motion.button>
+              {phase === "shuffling" && <button onClick={skip} className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-secondary hover:bg-elevated hover:text-foreground"><FiSkipForward size={14} />Skip animation</button>}
               <p className="mt-3 text-center text-[10px] leading-relaxed text-muted">{active.length ? `${active.length} active ${active.length === 1 ? "category" : "categories"} · 1 card each` : "Add categories and options, or choose a preset."}</p>
             </motion.div>
           ) : (
             <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex w-full flex-col items-center">
-              <span className="mb-3 rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1 text-[9px] font-medium tracking-[0.14em] text-accent">{phase === "complete" ? "DRAW COMPLETE" : "CARDS READY"}</span>
+              <span className="mb-3 rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1 text-[9px] font-medium tracking-[0.14em] text-accent">{phase === "complete" ? "DRAW COMPLETE" : phase === "dealing" ? "DEALING CARDS" : "CARDS READY"}</span>
               <h3 className="text-center text-xl font-semibold tracking-tight sm:text-2xl">{phase === "complete" ? "Draw results" : "Reveal your cards"}</h3>
               <p className="mt-2 text-center text-xs leading-relaxed text-secondary">{phase === "complete" ? "Save or copy this combination, or run another draw." : "Select a card or reveal all cards in sequence."}</p>
               <div className={`my-8 grid w-full gap-4 ${results.length === 1 ? "max-w-[190px] grid-cols-1" : results.length === 2 ? "max-w-[400px] grid-cols-2" : results.length === 3 ? "max-w-[620px] grid-cols-2 sm:grid-cols-3" : "grid-cols-2 xl:grid-cols-4"}`}>
-                {results.map((result, index) => <div key={index} ref={(element) => { resultRefs.current[index] = element; }}><Card result={result} index={index} revealed={revealed.includes(index)} charging={charging === index} disabled={busy} onReveal={() => reveal(index)} /></div>)}
+                {results.map((result, index) => <div key={index} ref={(element) => { resultRefs.current[index] = element; }}><Card result={result} index={index} revealed={revealed.includes(index)} charging={charging === index} disabled={busy} onReveal={() => reveal(index)} onDealComplete={index === results.length - 1 ? finishDealing : undefined} /></div>)}
               </div>
-              {phase === "ready" ? <div className="flex flex-wrap items-center justify-center gap-3"><button disabled={busy} onClick={revealAll} className="flex items-center gap-2 rounded-xl border border-blue-400/30 bg-blue-500/15 px-5 py-3 text-xs font-semibold text-accent transition hover:bg-blue-500/25 disabled:opacity-40"><FiZap size={15} />{busy ? "Revealing cards..." : "Reveal in sequence"}</button><button onClick={skip} className="flex items-center gap-2 rounded-xl px-4 py-3 text-xs text-secondary hover:bg-elevated hover:text-foreground"><FiSkipForward size={14} />Skip animation</button></div> : <div className="flex flex-wrap justify-center gap-2">
+              {phase === "ready" || phase === "dealing" ? <div className="flex flex-wrap items-center justify-center gap-3"><button disabled={busy} onClick={revealAll} className="flex items-center gap-2 rounded-xl border border-blue-400/30 bg-blue-500/15 px-5 py-3 text-xs font-semibold text-accent transition hover:bg-blue-500/25 disabled:opacity-40"><FiZap size={15} />{phase === "dealing" ? "Dealing cards..." : busy ? "Revealing cards..." : "Reveal in sequence"}</button><button onClick={skip} className="flex items-center gap-2 rounded-xl px-4 py-3 text-xs text-secondary hover:bg-elevated hover:text-foreground"><FiSkipForward size={14} />Skip animation</button></div> : <div className="flex flex-wrap justify-center gap-2">
                 <button disabled={saved} onClick={() => { saveResult(results); setSaved(true); play("save"); showToast("Combination saved to collection.", "success"); }} className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:bg-emerald-500/15 disabled:text-emerald-300 light:disabled:text-emerald-700">{saved ? <FiCheck size={15} /> : <FiBookmark size={15} />}{saved ? "Saved to collection" : "Save combination"}</button>
                 <button onClick={copy} className="flex items-center gap-2 rounded-xl border border-line px-4 py-3 text-xs text-secondary hover:bg-elevated"><FiCopy size={14} />Copy</button>
                 <button onClick={pull} className="flex items-center gap-2 rounded-xl border border-line px-4 py-3 text-xs text-secondary hover:bg-elevated"><FiRotateCw size={14} />Draw again</button>
