@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { FiArrowRight, FiBookmark, FiCheck, FiCopy, FiLayers, FiRotateCw, FiShuffle, FiSkipForward, FiZap } from "react-icons/fi";
 import { useGacha } from "@/hooks/useGacha";
@@ -8,7 +9,6 @@ import { useSound } from "@/hooks/useSound";
 import { activeCategories, drawResults, formatResults, type GachaResultItem } from "@/lib/gacha";
 import Card from "./Card";
 import DrawDeck, { SHUFFLE_DURATION } from "./DrawDeck";
-import Toast, { type ToastType } from "@/components/ui/Toast";
 
 type Phase = "idle" | "shuffling" | "dealing" | "ready" | "complete";
 
@@ -22,9 +22,6 @@ export default function GachaArea() {
   const [charging, setCharging] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [toast, setToast] = useState<{ id: number; message: string; type: ToastType } | null>(null);
-  const dismissToast = useCallback(() => setToast(null), []);
-  const showToast = (message: string, type: ToastType) => setToast((previous) => ({ id: (previous?.id ?? 0) + 1, message, type }));
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const lock = useRef(false);
   const opened = useRef(new Set<number>());
@@ -38,10 +35,10 @@ export default function GachaArea() {
   const pull = () => {
     if (lock.current) return;
     if (!active.length) {
-      showToast("Add options or choose a preset.", "info");
+      toast.info("Add options or choose a preset.");
       return;
     }
-    dismissToast();
+    toast.dismiss();
     clearTimers();
     stop();
     lock.current = true;
@@ -107,8 +104,8 @@ export default function GachaArea() {
   };
 
   const copy = async () => {
-    try { await navigator.clipboard.writeText(formatResults(results)); showToast("Combination copied.", "success"); play("click"); }
-    catch { showToast("Unable to copy. Select the result text to copy it manually.", "error"); }
+    try { await navigator.clipboard.writeText(formatResults(results)); toast.success("Combination copied."); play("click"); }
+    catch { toast.error("Unable to copy. Select the result text to copy it manually."); }
   };
 
   return (
@@ -144,7 +141,7 @@ export default function GachaArea() {
                 {results.map((result, index) => <div key={index} ref={(element) => { resultRefs.current[index] = element; }}><Card result={result} index={index} revealed={revealed.includes(index)} charging={charging === index} disabled={busy} onReveal={() => reveal(index)} onDealComplete={index === results.length - 1 ? finishDealing : undefined} /></div>)}
               </div>
               {phase === "ready" || phase === "dealing" ? <div className="flex flex-wrap items-center justify-center gap-3"><button disabled={busy} onClick={revealAll} className="flex items-center gap-2 rounded-xl border border-blue-400/30 bg-blue-500/15 px-5 py-3 text-xs font-semibold text-accent transition hover:bg-blue-500/25 disabled:opacity-40"><FiZap size={15} />{phase === "dealing" ? "Dealing cards..." : busy ? "Revealing cards..." : "Reveal in sequence"}</button><button onClick={skip} className="flex items-center gap-2 rounded-xl px-4 py-3 text-xs text-secondary hover:bg-elevated hover:text-foreground"><FiSkipForward size={14} />Skip animation</button></div> : <div className="flex flex-wrap justify-center gap-2">
-                <button disabled={saved} onClick={() => { saveResult(results); setSaved(true); play("save"); showToast("Combination saved to collection.", "success"); }} className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:bg-emerald-500/15 disabled:text-emerald-300 light:disabled:text-emerald-700">{saved ? <FiCheck size={15} /> : <FiBookmark size={15} />}{saved ? "Saved to collection" : "Save combination"}</button>
+                <button disabled={saved} onClick={() => { saveResult(results); setSaved(true); play("save"); toast.success("Combination saved to collection."); }} className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-xs font-semibold text-white transition hover:bg-blue-500 disabled:bg-emerald-500/15 disabled:text-emerald-300 light:disabled:text-emerald-700">{saved ? <FiCheck size={15} /> : <FiBookmark size={15} />}{saved ? "Saved to collection" : "Save combination"}</button>
                 <button onClick={copy} className="flex items-center gap-2 rounded-xl border border-line px-4 py-3 text-xs text-secondary hover:bg-elevated"><FiCopy size={14} />Copy</button>
                 <button onClick={pull} className="flex items-center gap-2 rounded-xl border border-line px-4 py-3 text-xs text-secondary hover:bg-elevated"><FiRotateCw size={14} />Draw again</button>
               </div>}
@@ -154,7 +151,6 @@ export default function GachaArea() {
         </AnimatePresence>
       </div>
       <div className="relative flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-line/70 px-4 py-4 text-[10px] text-muted"><span className="flex items-center gap-1.5"><FiLayers size={12} />Custom categories</span><span className="flex items-center gap-1.5"><FiShuffle size={12} />Equal odds</span><span className="flex items-center gap-1.5"><FiBookmark size={12} />Save results</span></div>
-      {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={dismissToast} />}
     </section>
   );
 }

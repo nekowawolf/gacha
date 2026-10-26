@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
 import '@/styles/globals.css';
 import { GachaProvider } from '@/hooks/useGacha';
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         <GachaProvider>
           {children}
         </GachaProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

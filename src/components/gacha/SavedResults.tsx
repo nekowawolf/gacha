@@ -1,26 +1,23 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { FiArrowDown, FiBookmark, FiCheck, FiClock, FiCopy, FiDownload, FiSearch, FiTrash2 } from "react-icons/fi";
 import { useGacha, type SavedResult } from "@/hooks/useGacha";
 import { formatResults, getPalette } from "@/lib/gacha";
 import Modal from "@/components/ui/Modal";
-import Toast, { type ToastType } from "@/components/ui/Toast";
 
 export default function SavedResults() {
   const { savedResults, removeResult } = useGacha();
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState(6);
   const [copied, setCopied] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ id: number; message: string; type: ToastType } | null>(null);
-  const dismissToast = useCallback(() => setToast(null), []);
-  const showToast = (message: string, type: ToastType) => setToast((previous) => ({ id: (previous?.id ?? 0) + 1, message, type }));
   const [deleting, setDeleting] = useState<SavedResult | null>(null);
   const matches = savedResults.filter((result) => formatResults(result.items).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
 
   const copy = async (result: SavedResult) => {
-    try { await navigator.clipboard.writeText(formatResults(result.items)); setCopied(result.id); showToast("Combination copied.", "success"); }
-    catch { showToast("Unable to copy. Select the result text or export your collection.", "error"); }
+    try { await navigator.clipboard.writeText(formatResults(result.items)); setCopied(result.id); toast.success("Combination copied."); }
+    catch { toast.error("Unable to copy. Select the result text or export your collection."); }
   };
 
   const download = () => {
@@ -49,8 +46,7 @@ export default function SavedResults() {
         {matches.length === 0 && <p className="rounded-xl border border-dashed border-line py-12 text-center text-sm text-muted">No matching combinations. Try another keyword.</p>}
         {matches.length > limit && <button onClick={() => setLimit((previous) => previous + 6)} className="mx-auto mt-5 flex items-center gap-2 rounded-lg border border-line px-4 py-2.5 text-xs text-secondary hover:bg-elevated">Show more<FiArrowDown /></button>}
       </>}
-      {toast && <Toast key={toast.id} message={toast.message} type={toast.type} onClose={dismissToast} />}
-      {deleting && <Modal title="Delete this combination?" onClose={() => setDeleting(null)}><p className="text-sm leading-relaxed text-secondary">This removes the saved combination. Categories and options are not affected.</p><div className="mt-6 flex justify-end gap-3"><button onClick={() => setDeleting(null)} className="rounded-xl border border-line px-4 py-2.5 text-sm">Cancel</button><button onClick={() => { removeResult(deleting.id); setDeleting(null); showToast("Combination deleted.", "success"); }} className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">Delete combination</button></div></Modal>}
+      {deleting && <Modal title="Delete this combination?" onClose={() => setDeleting(null)}><p className="text-sm leading-relaxed text-secondary">This removes the saved combination. Categories and options are not affected.</p><div className="mt-6 flex justify-end gap-3"><button onClick={() => setDeleting(null)} className="rounded-xl border border-line px-4 py-2.5 text-sm">Cancel</button><button onClick={() => { removeResult(deleting.id); setDeleting(null); toast.success("Combination deleted."); }} className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">Delete combination</button></div></Modal>}
     </section>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MotionConfig, motion } from "framer-motion";
-import { FiArrowDownRight, FiArrowRight, FiBox, FiCheck, FiCode, FiCoffee, FiFilm, FiGrid, FiLayers, FiMonitor, FiShuffle, FiSliders, FiZap } from "react-icons/fi";
+import { toast } from "sonner";
+import { FiArrowDownRight, FiArrowRight, FiBox, FiCode, FiCoffee, FiFilm, FiGrid, FiLayers, FiMonitor, FiRotateCcw, FiShuffle, FiSliders, FiZap } from "react-icons/fi";
 import { TbDeviceGamepad2, TbSparkles } from "react-icons/tb";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -17,16 +18,29 @@ import { activeCategories, combinationCount, presets, type PresetId } from "@/li
 const presetIcons = { website: FiMonitor, game: TbDeviceGamepad2, content: FiFilm, daily: FiCoffee };
 
 export default function HomePage() {
-  const { categories, applyPreset } = useGacha();
+  const { categories, applyPreset, resetGacha } = useGacha();
   const { play } = useSound();
   const [pendingPreset, setPendingPreset] = useState<PresetId | null>(null);
   const [mobileTab, setMobileTab] = useState<"stage" | "options">("stage");
+  const [showReset, setShowReset] = useState(false);
+  const [resetVersion, setResetVersion] = useState(0);
   const presetScrollRef = useRef<HTMLDivElement>(null);
   const presetFadeRef = useRef<HTMLDivElement>(null);
   const active = activeCategories(categories);
   const combinations = combinationCount(categories);
   const optionCount = active.reduce((total, category) => total + category.items.filter((item) => item.value.trim()).length, 0);
   const selectedPreset = presets.find((preset) => categories.length === preset.categories.length && categories.every((category, index) => category.id === `${preset.id}-${index}`));
+
+  const handleReset = () => {
+    const persistent = resetGacha();
+    setResetVersion((previous) => previous + 1);
+    setMobileTab("stage");
+    setPendingPreset(null);
+    setShowReset(false);
+    toast.dismiss();
+    if (persistent) toast.success("Gacha reset. Start fresh with new categories or a preset.");
+    else toast.warning("Gacha reset for this page, but browser storage could not be updated. Previous data may return after reloading.");
+  };
 
   useEffect(() => {
     const scroller = presetScrollRef.current;
@@ -85,7 +99,7 @@ export default function HomePage() {
                 </div>
                 <div ref={presetFadeRef} aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-blue-600/20 to-transparent transition-opacity duration-200 motion-reduce:transition-none" style={{ opacity: 0, visibility: "hidden" }} />
               </div>
-              <span className="flex shrink-0 items-center gap-1.5 text-[10px] text-muted"><FiCheck size={12} className="text-emerald-400" />No account required</span>
+              <button type="button" onClick={() => setShowReset(true)} className="flex min-h-8 shrink-0 items-center gap-1.5 self-start rounded-lg px-2 text-[11px] text-muted transition hover:bg-elevated hover:text-foreground sm:self-auto"><FiRotateCcw size={12} />Reset gacha</button>
             </div>
 
             <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-line bg-surface p-1 lg:hidden" role="tablist" aria-label="Studio view" onKeyDown={(event) => {
@@ -99,8 +113,8 @@ export default function HomePage() {
               <button id="options-tab" role="tab" tabIndex={mobileTab === "options" ? 0 : -1} aria-selected={mobileTab === "options"} aria-controls="options-panel" onClick={() => setMobileTab("options")} className={`flex items-center justify-center gap-2 rounded-lg py-3 text-xs font-medium transition ${mobileTab === "options" ? "bg-elevated text-foreground shadow-sm" : "text-muted"}`}><FiSliders size={14} />Edit options<span className="rounded bg-background/50 px-1.5 py-0.5 text-[9px]">{categories.length}</span></button>
             </div>
             <div className="grid items-stretch gap-5 lg:grid-cols-[310px_minmax(0,1fr)] xl:grid-cols-[330px_minmax(0,1fr)]">
-              <div id="options-panel" role="tabpanel" aria-labelledby="options-tab" className={`min-w-0 ${mobileTab === "options" ? "block" : "hidden lg:block"}`}><CategoryEditor /><button onClick={() => setMobileTab("stage")} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white lg:hidden">Go to draw<FiArrowRight /></button></div>
-              <div id="stage-panel" role="tabpanel" aria-labelledby="stage-tab" className={`min-w-0 [&>section]:h-full ${mobileTab === "stage" ? "block" : "hidden lg:block"}`}><GachaArea /></div>
+              <div id="options-panel" role="tabpanel" aria-labelledby="options-tab" className={`min-w-0 ${mobileTab === "options" ? "block" : "hidden lg:block"}`}><CategoryEditor key={resetVersion} /><button onClick={() => setMobileTab("stage")} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white lg:hidden">Go to draw<FiArrowRight /></button></div>
+              <div id="stage-panel" role="tabpanel" aria-labelledby="stage-tab" className={`min-w-0 [&>section]:h-full ${mobileTab === "stage" ? "block" : "hidden lg:block"}`}><GachaArea key={resetVersion} /></div>
             </div>
 
             <div className="mt-5 grid gap-4 rounded-xl border border-line/70 bg-surface/40 px-5 py-4 sm:grid-cols-3 sm:gap-7 sm:px-6">
@@ -111,11 +125,19 @@ export default function HomePage() {
               ].map(({ step, Icon, title, description }) => <div key={step} className="flex items-center gap-3"><span className="text-[10px] font-medium tabular-nums text-muted/60">{step}</span><div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-elevated text-secondary"><Icon size={14} /></div><div><h3 className="text-[11px] font-medium">{title}</h3><p className="mt-1 text-[10px] leading-relaxed text-muted">{description}</p></div></div>)}
             </div>
           </section>
-          <SavedResults />
+          <SavedResults key={resetVersion} />
         </main>
         <Footer />
       </div>
       {pendingPreset && <Modal title={`Use the ${presets.find((preset) => preset.id === pendingPreset)?.name} preset?`} onClose={() => setPendingPreset(null)}><p className="text-sm leading-7 text-secondary">This replaces your current categories and options. Saved combinations are not affected.</p><div className="mt-6 flex justify-end gap-3"><button onClick={() => setPendingPreset(null)} className="rounded-xl border border-line px-4 py-2.5 text-sm hover:bg-elevated">Cancel</button><button onClick={() => { applyPreset(pendingPreset); setPendingPreset(null); play("click"); }} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Use preset</button></div></Modal>}
+      {showReset && <Modal title="Reset gacha?" onClose={() => setShowReset(false)}>
+        <p className="text-sm leading-7 text-secondary">Start fresh by removing all categories, options, and saved combinations from this browser. The current draw will also be cleared. Theme and sound preferences are not affected.</p>
+        <p className="mt-3 text-xs leading-relaxed text-red-400 light:text-red-600">This cannot be undone. Export your collection first if you want to keep your saved results.</p>
+        <div className="mt-6 flex justify-end gap-3">
+          <button type="button" onClick={() => setShowReset(false)} className="rounded-xl border border-line px-4 py-2.5 text-sm hover:bg-elevated">Cancel</button>
+          <button type="button" onClick={handleReset} className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600">Reset gacha</button>
+        </div>
+      </Modal>}
     </MotionConfig>
   );
 }

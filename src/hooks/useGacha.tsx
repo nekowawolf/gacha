@@ -16,6 +16,7 @@ interface GachaContextType {
   persistent: boolean;
   addCategory: (name: string) => void;
   removeCategory: (id: string) => void;
+  clearCategories: () => boolean;
   updateCategory: (id: string, name: string) => void;
   toggleCategory: (id: string) => void;
   addItem: (categoryId: string, value: string) => void;
@@ -25,6 +26,7 @@ interface GachaContextType {
   importCategories: (text: string) => void;
   saveResult: (items: GachaResultItem[], title?: string) => void;
   removeResult: (id: string) => void;
+  resetGacha: () => boolean;
 }
 
 const GachaContext = createContext<GachaContextType | undefined>(undefined);
@@ -42,6 +44,10 @@ export function GachaProvider({ children }: { children: React.ReactNode }) {
       persistent: categoryState.persistent && resultState.persistent,
       addCategory: (name) => { if (name.trim()) setCategories((previous) => [...previous, { id: crypto.randomUUID(), name: name.trim(), enabled: true, items: [] }]); },
       removeCategory: (id) => setCategories((previous) => previous.filter((category) => category.id !== id)),
+      clearCategories: () => {
+        setCategories([]);
+        return categoryStore.getSnapshot().persistent;
+      },
       updateCategory: (id, name) => editCategory(id, (category) => ({ ...category, name })),
       toggleCategory: (id) => editCategory(id, (category) => ({ ...category, enabled: category.enabled === false })),
       addItem: (id, value) => { if (value.trim()) editCategory(id, (category) => ({ ...category, items: [...category.items, { id: crypto.randomUUID(), value: value.trim() }] })); },
@@ -57,6 +63,11 @@ export function GachaProvider({ children }: { children: React.ReactNode }) {
       },
       saveResult: (items, title) => { if (items.length) resultStore.setValue((previous) => [{ id: crypto.randomUUID(), items: items.map((item) => ({ ...item })), timestamp: Date.now(), title }, ...previous]); },
       removeResult: (id) => resultStore.setValue((previous) => previous.filter((result) => result.id !== id)),
+      resetGacha: () => {
+        categoryStore.setValue(defaultCategories);
+        resultStore.setValue([]);
+        return categoryStore.getSnapshot().persistent && resultStore.getSnapshot().persistent;
+      },
     }}>
       {children}
     </GachaContext.Provider>
