@@ -15,13 +15,16 @@ const rarityStyles: Record<Rarity, { border: string; text: string; glow: string;
   mythic: { border: "border-rose-400/80", text: "text-rose-300 light:text-rose-700", glow: "bg-rose-400", gradient: "from-rose-600/30 light:from-rose-400/15" },
 };
 
-export function CardBack({ index = 0 }: { index?: number }) {
+export function CardBack({ index = 0, categoryName }: { index?: number; categoryName?: string }) {
   return (
     <div className="absolute inset-0 overflow-hidden rounded-[inherit] border border-blue-400/35 bg-linear-to-br from-[#182e51] via-[#101c32] to-[#101828] shadow-[inset_0_0_30px_#3b82f612] light:from-blue-50 light:via-white light:to-blue-100">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#2563eb18,transparent_70%)]" />
       <div className="absolute inset-x-0 inset-y-5"><Image src="/img/gacha_line.webp" alt="" fill sizes="240px" className="object-cover opacity-90" priority /></div>
       <div className="absolute inset-x-3 top-3 flex items-center justify-between text-[7px] font-semibold tracking-[0.2em] text-blue-200/60 light:text-blue-800/75"><span>GACHA</span><span>{String(index + 1).padStart(2, "0")}</span></div>
-      <div className="absolute inset-x-0 bottom-3 text-center text-[7px] tracking-[0.2em] text-blue-200/50 light:text-blue-800/65">RANDOM SELECTION</div>
+      <div className="absolute inset-x-3 bottom-3 space-y-1 text-center text-[7px] uppercase tracking-[0.2em] text-blue-200/50 light:text-blue-800/65">
+        {categoryName && <p className="line-clamp-2 break-words">{categoryName}</p>}
+        <p>RANDOM SELECTION</p>
+      </div>
       <div className="absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-transparent" />
     </div>
   );
@@ -53,7 +56,7 @@ export default function Card({ result, index, revealed, charging, disabled, onRe
         className="relative block aspect-[2/3] w-full rounded-xl text-left outline-offset-8 perspective-[1200px] disabled:cursor-default"
       >
         <motion.div animate={{ rotateY: revealed ? 180 : 0 }} transition={{ duration: reduced ? 0 : 0.8, ease: [0.22, 1, 0.36, 1] }} className="absolute inset-0 rounded-xl transform-3d">
-          <div aria-hidden="true" className="absolute inset-0 rounded-xl backface-hidden"><CardBack index={index} />{charging && <motion.div initial={{ opacity: 0 }} animate={{ opacity: reduced ? 0.25 : [0, 0.25, 0.65] }} transition={{ duration: 0.5 }} className="absolute inset-0 rounded-xl bg-blue-200 mix-blend-screen" />}</div>
+          <div aria-hidden="true" className="absolute inset-0 rounded-xl backface-hidden"><CardBack index={index} categoryName={result.categoryName} />{charging && <motion.div initial={{ opacity: 0 }} animate={{ opacity: reduced ? 0.25 : [0, 0.25, 0.65] }} transition={{ duration: 0.5 }} className="absolute inset-0 rounded-xl bg-blue-200 mix-blend-screen" />}</div>
           <div aria-hidden={!revealed} className={`absolute inset-0 flex rotate-y-180 flex-col overflow-hidden rounded-xl border bg-surface bg-linear-to-b ${style.gradient} to-transparent p-3 backface-hidden sm:p-4 ${style.border}`}>
             {revealed && <>
               <div className={`flex items-center justify-between gap-1 text-[8px] font-semibold uppercase tracking-wider ${style.text}`}><span className="truncate">{result.categoryName}</span><FiArrowUpRight size={13} className="shrink-0" /></div>
@@ -68,7 +71,6 @@ export default function Card({ result, index, revealed, charging, disabled, onRe
           </div>
         </motion.div>
       </motion.button>
-      <p className="mt-3 truncate text-center text-[10px] text-secondary">{result.categoryName}</p>
     </motion.div>
   );
 }

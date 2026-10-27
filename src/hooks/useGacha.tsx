@@ -26,6 +26,7 @@ interface GachaContextType {
   importCategories: (text: string) => void;
   saveResult: (items: GachaResultItem[], title?: string) => void;
   removeResult: (id: string) => void;
+  renameResult: (id: string, title: string) => boolean;
   resetGacha: () => boolean;
 }
 
@@ -63,6 +64,10 @@ export function GachaProvider({ children }: { children: React.ReactNode }) {
       },
       saveResult: (items, title) => { if (items.length) resultStore.setValue((previous) => [{ id: crypto.randomUUID(), items: items.map((item) => ({ ...item })), timestamp: Date.now(), title }, ...previous]); },
       removeResult: (id) => resultStore.setValue((previous) => previous.filter((result) => result.id !== id)),
+      renameResult: (id, title) => {
+        resultStore.setValue((previous) => previous.map((result) => result.id === id ? { ...result, title: title.trim().slice(0, 80) || undefined } : result));
+        return resultStore.getSnapshot().persistent;
+      },
       resetGacha: () => {
         categoryStore.setValue(defaultCategories);
         resultStore.setValue([]);
